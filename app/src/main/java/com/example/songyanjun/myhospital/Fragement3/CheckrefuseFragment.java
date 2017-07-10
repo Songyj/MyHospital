@@ -20,7 +20,7 @@ public class CheckrefuseFragment extends DialogFragment {
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
+//
         View view = inflater.inflate(R.layout.check_refuse, container,false);
 
 

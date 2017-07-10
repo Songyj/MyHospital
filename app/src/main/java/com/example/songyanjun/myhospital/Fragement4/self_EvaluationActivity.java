@@ -70,14 +70,7 @@ public class self_EvaluationActivity extends AppCompatActivity {
         TextView count_num = (TextView)  findViewById(R.id.count_num);
         count_num.setText("20000");
 
-//        CircleImageView circleImageView = (CircleImageView) this.findViewById(R.id.eva_circleview);
-//        circleImageView.setImageResource(R.drawable.user);
-//        TextView doc_name = (TextView)findViewById(R.id.eva_award_name);
-//        doc_name.setText("张医生");
-//        BorderTextView1 doc_department = (BorderTextView1)findViewById(R.id.eva_award_department);
-//        doc_department.setText("消化道科");
-//        TextView doc_post = (TextView)findViewById(R.id.eva_award_post);
-//        doc_post.setText("主治医师");
+
 
         initEvas();
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.eva_recycler_view);
@@ -87,12 +80,12 @@ public class self_EvaluationActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(new MyItemDecoration(this));
         recyclerView.setAdapter(adapter);
         Button commit = (Button)findViewById(R.id.eva_commit);
-//        commit.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-////                new DoubleCheck1().show(getSupportFragmentManager(),"activity_p_doublecheck1");
-////            }
-////        });
+        commit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new DoubleCheck().show(getSupportFragmentManager(),"activity_p_doublecheck1");
+            }
+        });
 //        ImageButton back = (ImageButton)findViewById(R.id.eva_Btn_backhome);
 //        back.setOnClickListener(new View.OnClickListener() {
 //            @Override

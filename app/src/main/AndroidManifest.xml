@@ -24,6 +24,9 @@
         <activity android:name=".Fragement3.Apply_Flag"/>
         <activity android:name=".Fragement3.Apply_Redbag"/>
         <activity android:name=".Fragement4.self_EvaluationActivity"/>
+        <activity android:name=".Fragement4.look_evaluationActivity"/>
+        <activity android:name=".Fragement3.SucceedActivity"/>
+        <activity android:name=".Fragement4.SucceedActivity1"/>
     </application>
 
 </manifest>

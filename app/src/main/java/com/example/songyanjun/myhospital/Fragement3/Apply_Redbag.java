@@ -265,7 +265,7 @@ public class Apply_Redbag extends AppCompatActivity implements DataCallBack{
             @Override
             public void onClick(View view) {
                 if(check()== true ){
-                    new CheckacceptFragment().show(getSupportFragmentManager(), "doublecheck");
+                    new Checkaccept_rg_Fragment().show(getSupportFragmentManager(), "doublecheck");
 
                     Log.d("result","true");
 

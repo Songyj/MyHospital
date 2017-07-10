@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.example.songyanjun.myhospital.Fragement3.Apply_Flag;
 import com.example.songyanjun.myhospital.R;
 
 /**
@@ -35,7 +34,6 @@ public class Fragment4 extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getContext(),self_EvaluationActivity.class);
-                intent.putExtra("apply_type",type1.getText());
                 startActivity(intent);
             }
         });
@@ -43,8 +41,7 @@ public class Fragment4 extends Fragment {
         type2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getContext(),Apply_Flag.class);
-                intent.putExtra("apply_type",type2.getText());
+                Intent intent = new Intent(getContext(),look_evaluationActivity.class);
                 startActivity(intent);
             }
         });
