@@ -277,7 +277,7 @@ public class Apply_Redbag extends AppCompatActivity implements DataCallBack{
 //        upload = (Button)findViewById(R.id.Btn_upload);
 //        upload.setOnClickListener(new View.OnClickListener() {
 //            @Override
-//            public void onClick(View view) {
+//           、、 public void onClick(View view) {
 //                new PhotoPickerFragment().show(getSupportFragmentManager(), "photopicker");
 //            }
 //        });
