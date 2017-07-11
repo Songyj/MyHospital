@@ -31,6 +31,8 @@ public class Fragment1 extends Fragment {
     private RecyclerView recyclerView_award;
 
     Context context;
+    private CircleImageView circleImageView;
+
     public Fragment1() {
     }
     public Fragment1(Context _context) {
@@ -41,14 +43,16 @@ public class Fragment1 extends Fragment {
         Log.d(TAG, "onAttach: ");
     }
 
+    Bundle mBundle = new Bundle();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.homepage, container, false);
 //            super.onCreate(savedInstanceState);
 //            setContentView(R.layout.homepage);
 
-        CircleImageView circleImageView = (CircleImageView) view.findViewById(R.id.circleview);
+        circleImageView = (CircleImageView) view.findViewById(R.id.circleview);
         circleImageView.setImageResource(R.drawable.user);
+
         TextView doc_name = (TextView) view.findViewById(R.id.doc_name);
         doc_name.setText("张医生");
         BorderTextView1 doc_department = (BorderTextView1) view.findViewById(R.id.doc_department);
@@ -123,4 +127,22 @@ public class Fragment1 extends Fragment {
         recyclerView_award.addItemDecoration(new MyItemDecoration(getActivity()));
         recyclerView_award.setAdapter(awardadapter);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        circleImageView.setImageResource(R.drawable.user);
+
+
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+}

@@ -48,4 +48,5 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
 ////        page3.setText(date);
         }
     }
+
 }

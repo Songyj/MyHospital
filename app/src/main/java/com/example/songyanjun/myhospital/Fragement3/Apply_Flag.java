@@ -1,9 +1,14 @@
 package com.example.songyanjun.myhospital.Fragement3;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -13,22 +18,31 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.songyanjun.myhospital.Bottom_Toolbar;
 import com.example.songyanjun.myhospital.R;
+import com.example.songyanjun.myhospital.utils.CropUtils;
+import com.example.songyanjun.myhospital.utils.DialogPermission;
+import com.example.songyanjun.myhospital.utils.FileUtil;
+import com.example.songyanjun.myhospital.utils.PermissionUtil;
+import com.example.songyanjun.myhospital.utils.SharedPreferenceMark;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import static com.example.songyanjun.myhospital.R.drawable.star1;
 import static com.example.songyanjun.myhospital.R.id.text_time;
 
 
+
 /**
  * Created by songyanjun on 2017/7/5.
  */
 
-public class Apply_Flag extends AppCompatActivity implements DataCallBack{
+public class Apply_Flag extends AppCompatActivity implements DataCallBack {
 
     public static final String TAG = "SaveStateActivity";
 
@@ -51,6 +65,15 @@ public class Apply_Flag extends AppCompatActivity implements DataCallBack{
     private EditText editText;
     private Button submit;
     private Button upload;
+
+    private ImageView pic;
+
+    private static final int REQUEST_CODE_TAKE_PHOTO = 4;
+    private static final int REQUEST_CODE_ALBUM = 2;
+    private static final int REQUEST_CODE_CROUP_PHOTO = 3;
+
+    private File file;
+    private Uri uri;
 
 
     @Override
@@ -94,6 +117,7 @@ public class Apply_Flag extends AppCompatActivity implements DataCallBack{
             }
         });
 
+        pic = (ImageView)findViewById(R.id.apply_img);
         person1 = (EditText)findViewById(R.id.text_person1);
         person1.addTextChangedListener(new TextWatcher() {
             @Override
@@ -183,14 +207,6 @@ public class Apply_Flag extends AppCompatActivity implements DataCallBack{
         Rect r = new Rect(0, 0, drawable1.getMinimumWidth()/2, drawable1.getMinimumHeight()/2);
         drawable1.setBounds(r);
 
-        upload = (Button)findViewById(R.id.Btn_upload);
-        upload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new PhotoPickerFragment().show(getSupportFragmentManager(), "photopicker");
-            }
-        });
-
 
         submit = (Button)findViewById(R.id.Btn_submit);
         submit.setOnClickListener(new View.OnClickListener() {
@@ -200,7 +216,6 @@ public class Apply_Flag extends AppCompatActivity implements DataCallBack{
 //                    Intent intent = new Intent(Apply_Flag.this, Bottom_Toolbar.class);
 //                    intent.putExtra("id",2);
                     new CheckacceptFragment().show(getSupportFragmentManager(), "doublecheck");
-
                     Log.d("result","true");
 
                 }else{
@@ -211,7 +226,25 @@ public class Apply_Flag extends AppCompatActivity implements DataCallBack{
             }
         });
 
+        Button cam = (Button)findViewById(R.id.set_camera);
+        Button alb = (Button) findViewById(R.id.take_photo);
+        cam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (PermissionUtil.hasCameraPermission(Apply_Flag.this)) {
+                    uploadAvatarFromPhotoRequest();
+                }
+            }
+        });
+        alb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                uploadAvatarFromAlbumRequest();
 
+            }
+        });
+
+        init();
 
             }
 
@@ -242,6 +275,8 @@ public class Apply_Flag extends AppCompatActivity implements DataCallBack{
 
     }
 
+
+
     @Override
     public void getData(String data) {
         if(data.length()!=0){time.setCompoundDrawables(null,null,null,null);time.setText(data);}
@@ -250,19 +285,38 @@ public class Apply_Flag extends AppCompatActivity implements DataCallBack{
 
     @Override
     protected void onActivityResult(int requestCode,int resultCode,Intent data){
-        switch (requestCode){
-            case 1:
-                if(resultCode == RESULT_OK);{
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode ==1 ){
+            if(resultCode == RESULT_OK){
                 type1 = data.getStringExtra("de_type");
                 Log.d("de_type","get"+ type1);
                 setDe_type();
                 award_type = data.getStringExtra("apply_type");
                 Log.d("apply_type","get"+ award_type);
             }
-            break;
-        default:
 
         }
+        else {
+            if (resultCode != -1) {
+            return;
+        }
+        if (requestCode == REQUEST_CODE_ALBUM && data != null) {
+            Uri newUri;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                newUri = Uri.parse("file:///" + CropUtils.getPath(this, data.getData()));
+            } else {
+                newUri = data.getData();
+            }
+            if (newUri != null) {
+                startPhotoZoom(newUri);
+            } else {
+                Toast.makeText(this, "没有得到相册图片", Toast.LENGTH_LONG).show();
+            }
+        } else if (requestCode == REQUEST_CODE_TAKE_PHOTO) {
+            startPhotoZoom(uri);
+        } else if (requestCode == REQUEST_CODE_CROUP_PHOTO) {
+            uploadAvatarFromPhoto();
+        }}
     }
 
 
@@ -281,7 +335,119 @@ public class Apply_Flag extends AppCompatActivity implements DataCallBack{
 
         return n;
     }
+    private void init() {
+        file = new File(FileUtil.getCachePath(this), "user-avatar.jpg");
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            uri = Uri.fromFile(file);
+        } else {
+            //通过FileProvider创建一个content类型的Uri(android 7.0需要这样的方法跨应用访问)
+//            uri = FileProvider.getUriForFile(MyApplication.getApp(), "com.yf.useravatar", file);
+//            uri = FileProvider.getUriForFile(getApplication(), "com.yf.useravatar", file);
 
+        }
+    }
+
+
+
+    /**
+     * photo
+     */
+    private void uploadAvatarFromPhotoRequest() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.putExtra(MediaStore.Images.Media.ORIENTATION, 0);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        startActivityForResult(intent, REQUEST_CODE_TAKE_PHOTO);
+    }
+
+    /**
+     * album
+     */
+    private void uploadAvatarFromAlbumRequest() {
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, REQUEST_CODE_ALBUM);
+    }
+
+
+    private void uploadAvatarFromPhoto() {
+        compressAndUploadAvatar(file.getPath());
+
+    }
+
+    private void compressAndUploadAvatar(String fileSrc) {
+        final File cover = FileUtil.getSmallBitmap(this, fileSrc);
+//        String mimeType = "image/*";
+//        requestBody = RequestBody.create(MediaType.parse(mimeType), file);
+//        String fileName = cover.getName();
+//        photo = MultipartBody.Part.createFormData("portrait", fileName.substring(fileName.lastIndexOf("/") + 1, fileName.length()), requestBody);
+        //Fresco设置圆形头像
+//        GenericDraweeHierarchyBuilder builder = new GenericDraweeHierarchyBuilder(getResources());
+//        GenericDraweeHierarchy hierarchy = builder
+//                .setDesiredAspectRatio(1.0f)
+//                .setFailureImage(R.mipmap.ic_launcher)
+//                .setRoundingParams(RoundingParams.fromCornersRadius(100f))
+//                .build();
+//
+//        //加载本地图片
+        Uri uri = Uri.fromFile(cover);
+        Log.d("uri","get"+uri);
+        pic.setImageURI(uri);
+
+
+//        DraweeController controller = Fresco.newDraweeControllerBuilder()
+//                .setOldController(mSimpleDraweeView.getController())
+//                .setUri(uri)
+//                .build();
+//        mSimpleDraweeView.setHierarchy(hierarchy);
+//        mSimpleDraweeView.setController(controller);
+
+    }
+
+
+    /**
+     * 裁剪拍照裁剪
+     *
+     * @param uri
+     */
+    public void startPhotoZoom(Uri uri) {
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri, "image/*");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.putExtra("crop", "true");// crop=true 有这句才能出来最后的裁剪页面.
+        intent.putExtra("aspectX", 1);// 这两项为裁剪框的比例.
+        intent.putExtra("aspectY", 1);// x:y=1:1
+//        intent.putExtra("outputX", 400);//图片输出大小
+//        intent.putExtra("outputY", 400);
+        intent.putExtra("output", Uri.fromFile(file));
+        intent.putExtra("outputFormat", "JPEG");// 返回格式
+        startActivityForResult(intent, REQUEST_CODE_CROUP_PHOTO);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+
+            case PermissionUtil.REQUEST_SHOWCAMERA:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission Granted
+                    uploadAvatarFromPhotoRequest();
+
+                } else {
+                    if (!SharedPreferenceMark.getHasShowCamera()) {
+                        SharedPreferenceMark.setHasShowCamera(true);
+                        new DialogPermission(this, "关闭摄像头权限影响扫描功能");
+
+                    } else {
+                        Toast.makeText(this, "未获取摄像头权限", Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
 
 
 }
